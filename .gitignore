@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# SymSpell base dict is copied from package on first run (~2MB)
+data/frequency_base.txt
+data/frequency_personal.txt
+
+# Local rolling backups (FixIt-style)
+memory_backup_*.json
+
+.env
+.env.*
