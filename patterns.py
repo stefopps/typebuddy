@@ -84,6 +84,51 @@ def _apply_phrase_patterns(text: str, patterns: dict, min_count: int) -> str:
     return text
 
 
+def _active_patterns(patterns: dict, min_count: int) -> dict[str, dict]:
+    return {k: v for k, v in patterns.items() if v.get("count", 0) >= min_count}
+
+
+def _split_stuck(word: str, patterns: dict, min_count: int = 2) -> str:
+    """Split long smashed tokens when both halves are known pattern keys."""
+    if len(word) <= 12:
+        return word
+    active = _active_patterns(patterns, min_count)
+    w = word.lower()
+    for i in range(4, len(w) - 3):
+        left, right = w[:i], w[i:]
+        if left in active and right in active:
+            fixed = f'{active[left]["fixed"]} {active[right]["fixed"]}'
+            if word and word[0].isupper():
+                fixed = fixed[0].upper() + fixed[1:]
+            return fixed
+    return word
+
+
+def split_stuck_tokens(text: str, min_count: int = 2) -> str:
+    """Run stuck-token splitter on each word before pattern lookup."""
+    if not text or not text.strip():
+        return text
+    patterns = _load_patterns()
+    if not patterns:
+        return text
+    protected = _load_memory()[1]
+    out: list[str] = []
+    for word in text.split():
+        clean, trail, lead = _strip_word_punct(word)
+        if not clean:
+            out.append(word)
+            continue
+        if clean.lower() in protected:
+            out.append(word)
+            continue
+        split = _split_stuck(clean, patterns, min_count)
+        if split != clean:
+            out.append(lead + split + trail)
+        else:
+            out.append(word)
+    return " ".join(out)
+
+
 def apply_patterns(text: str, min_count: int = 2) -> str:
     """Replace phrase + token patterns from memory.json (count >= min_count)."""
     if not text or not text.strip():

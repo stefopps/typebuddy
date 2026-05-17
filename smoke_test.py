@@ -194,6 +194,23 @@ def t3g():
 results.append(test("3g. Phrase patterns", t3g))
 
 
+def t3h():
+    from corrector import pre_correct
+    from patterns import apply_patterns, split_stuck_tokens
+
+    if apply_patterns("apourtogether sspeedttesting") != "appear together speed testing":
+        raise RuntimeError("stuck smash patterns failed")
+    if "human" not in pre_correct("hunan beeng"):
+        raise RuntimeError("being/human patterns failed")
+    out = split_stuck_tokens("xxxxx")  # no split for short
+    if out != "xxxxx":
+        raise RuntimeError("split_stuck should skip short tokens")
+    return "stuck split pass + smash patterns"
+
+
+results.append(test("3h. Stuck-token split", t3h))
+
+
 def t4():
     import dictionary as dict_mod
 

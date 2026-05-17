@@ -7,7 +7,7 @@ from __future__ import annotations
 import re
 
 import dictionary as dict_mod
-from patterns import apply_patterns, is_protected
+from patterns import apply_patterns, is_protected, split_stuck_tokens
 
 _PUNCT = ".,!?;:'\""
 
@@ -45,10 +45,11 @@ def _strip_word_punct(word: str) -> tuple[str, str, str]:
 
 
 def pre_correct(text: str) -> str:
-    """Pass 0: doubles. Pass 1: memory.json patterns. Pass 2: SymSpell."""
+    """Pass 0: doubles. Pass 1: stuck split. Pass 2: patterns. Pass 3: SymSpell."""
     if not text or not text.strip():
         return text
     text = _clean_doubles(text)
+    text = split_stuck_tokens(text)
     text = apply_patterns(text)
     return fix_line(text, doubles_done=True)
 
